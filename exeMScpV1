@@ -1,0 +1,48 @@
+import spacy
+from nltk.corpus import wordnet
+import nltk
+
+# Ensure NLTK resources are downloaded
+nltk.download("wordnet")
+
+def pos_tagger(sentence):
+    # Load pre-trained SpaCy model
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(sentence)
+    
+    results = []
+
+    print("\nPart-of-Speech Tagging, Dependencies, and Named Entities:\n")
+    for token in doc:
+        synonyms = get_synonyms(token.text)
+        result = {
+            "Word": token.text,
+            "POS Tag": token.pos_,
+            "Dependency": token.dep_,
+            "Head Word": token.head.text,
+            "Synonyms": synonyms
+        }
+        results.append(result)
+        print(f"Word: {token.text}, POS Tag: {token.pos_}, Dependency: {token.dep_}, Head: {token.head.text}, Synonyms: {', '.join(synonyms) or 'N/A'}")
+
+    print("\nNamed Entities:\n")
+    for ent in doc.ents:
+        print(f"Entity: {ent.text}, Label: {ent.label_}")
+    
+    # Optionally save results to a file
+    save_to_file(results)
+
+def get_synonyms(word):
+    synonyms = []
+    for syn in wordnet.synsets(word):
+        for lemma in syn.lemmas():
+            synonyms.append(lemma.name())
+    return list(set(synonyms))  # Return unique synonyms
+
+def save_to_file(results):
+    with open("pos_tagger_output.txt", "w", encoding="utf-8") as file:
+        for entry in results:
+            file.write(f"{entry}\n")
+    print("\nResults saved to 'pos_tagger_output.txt'!")
+
+
